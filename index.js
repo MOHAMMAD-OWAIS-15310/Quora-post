@@ -2,6 +2,11 @@ const express=require("express");
 const app=express();
 const port=3000;
 const path=require("path");
+const { v4 : uuidv4 } =require('uuid');
+const methodOverride=require("method-override");
+
+app.use(methodOverride("_method"));
+// uuidv4(); 
 
 app.use(express.urlencoded({extended : true}));
 
@@ -11,16 +16,22 @@ app.use(express.static(path.join(__dirname,"public")));
 
 let posts=[
     {
+        id:uuidv4(),
     username : "owais",
-    content : "i love teaching"
+    content : "i love teaching",
+    
     },
     {
+        id:uuidv4(),
     username : "sahil",
-    content : "i love coding"
+    content : "i love coding",
+    
     },
     {
+        id:uuidv4(),
     username : "hussain",
-    content : "i love eating"
+    content : "i love eating",
+    
     }
 ]
 
@@ -31,13 +42,45 @@ app.get("/posts/new",(req,res)=>{
     res.render("new.ejs");
 })
 app.post("/posts",(req,res)=>{
-    console.log(req.body);
+    // console.log(req.body);
+
     let {username,content}=req.body;
-    posts.push({username, content});
+    let id=uuidv4();
+    posts.push({username, content,id});
     // res.send("post req working");
     res.redirect("/posts");
 })
+app.get("/posts/:id",(req,res)=>{
+    let {id}=req.params;
+    console.log(id);
+    let post=posts.find((p) => id === p.id);
+    // console.log(post);
+    // res.send("request working");
+    res.render("show.ejs",{post});
+})
 
+app.patch("/posts/:id",(req,res)=>{
+    let {id}=req.params;
+    let newContent=req.body.content;
+    let post=posts.find((p) => id === p.id);
+    post.content=newContent;
+    console.log(post);
+    // res.send("pathch req is wroking");
+    res.redirect("/posts");
+})
+
+app.get("/posts/:id/edit",(req,res)=>{
+    let {id}=req.params;
+    let post=posts.find((p) => id === p.id);
+    res.render("edit.ejs",{post});
+})
+app.delete("/posts/:id",(req,res)=>{
+    let {id}=req.params;
+    // let post=posts.find((p) => id === p.id);
+     posts=posts.filter((p) => id !== p.id);
+    // res.send("delete successful performed");
+    res.redirect("/posts/");
+})
 app.listen(port,(req,res)=>{
     console.log(`listening to port ${port}`);
 })
